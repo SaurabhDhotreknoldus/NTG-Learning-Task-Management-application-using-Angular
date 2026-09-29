@@ -1,0 +1,270 @@
+<div class="task-list-wrapper">
+  <!-- Top List Header & Controls -->
+  <div class="list-header-card">
+    <div class="header-main">
+      <div class="title-with-counter">
+        <h2 class="section-title">
+          <span>Task Backlog</span>
+          <!-- Live Pending Task Count Indicator -->
+          <span 
+            class="pending-counter-badge" 
+            [class.pending-counter-badge--zero]="pendingCount === 0"
+            title="Current live count of pending tasks"
+          >
+            {{ pendingCount }} pending
+          </span>
+        </h2>
+        <p class="section-subtitle">
+          Showing {{ filteredTasks.length }} of {{ totalTasksCount }} total tasks
+        </p>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="header-actions">
+        <label class="sort-checkbox-label" title="Automatically sort completed tasks to bottom of the list">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="moveCompletedToBottom"
+            class="checkbox-input"
+          />
+          <span>Move completed to bottom</span>
+        </label>
+
+        @if (totalTasksCount > 0) {
+          <button 
+            type="button" 
+            class="clear-all-btn" 
+            (click)="onClearAll()"
+            title="Delete all tasks from list"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <span>Clear All</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="toolbar">
+      <!-- Search Input with Two-Way Binding -->
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Filter tasks by keyword..."
+          [(ngModel)]="searchQuery"
+          class="search-input"
+        />
+        @if (searchQuery.trim().length > 0) {
+          <button 
+            type="button" 
+            class="clear-search-btn" 
+            (click)="clearSearch()" 
+            aria-label="Clear search query"
+          >
+            &times;
+          </button>
+        }
+      </div>
+
+      <!-- Status Filter Tabs -->
+      <div class="status-filters" role="tablist" aria-label="Task status filters">
+        <button
+          type="button"
+          class="filter-tab"
+          [class.active]="activeStatusFilter === 'all'"
+          (click)="setStatusFilter('all')"
+          role="tab"
+          [attr.aria-selected]="activeStatusFilter === 'all'"
+        >
+          All ({{ totalTasksCount }})
+        </button>
+        <button
+          type="button"
+          class="filter-tab"
+          [class.active]="activeStatusFilter === 'pending'"
+          (click)="setStatusFilter('pending')"
+          role="tab"
+          [attr.aria-selected]="activeStatusFilter === 'pending'"
+        >
+          Pending ({{ pendingCount }})
+        </button>
+        <button
+          type="button"
+          class="filter-tab"
+          [class.active]="activeStatusFilter === 'completed'"
+          (click)="setStatusFilter('completed')"
+          role="tab"
+          [attr.aria-selected]="activeStatusFilter === 'completed'"
+        >
+          Completed ({{ completedTasksCount }})
+        </button>
+      </div>
+
+      <!-- Priority Filter Chips -->
+      <div class="priority-filters" aria-label="Priority filters">
+        <span class="filter-label">Priority:</span>
+        <button
+          type="button"
+          class="chip-btn"
+          [class.chip-btn--active]="activePriorityFilter === 'all'"
+          (click)="setPriorityFilter('all')"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          class="chip-btn chip-btn--high"
+          [class.chip-btn--active]="activePriorityFilter === 'high'"
+          (click)="setPriorityFilter('high')"
+        >
+          🔴 High
+        </button>
+        <button
+          type="button"
+          class="chip-btn chip-btn--medium"
+          [class.chip-btn--active]="activePriorityFilter === 'medium'"
+          (click)="setPriorityFilter('medium')"
+        >
+          🟡 Medium
+        </button>
+        <button
+          type="button"
+          class="chip-btn chip-btn--low"
+          [class.chip-btn--active]="activePriorityFilter === 'low'"
+          (click)="setPriorityFilter('low')"
+        >
+          🟢 Low
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Items List Container -->
+  <div class="tasks-container">
+    <!-- State 1: Absolutely No Tasks (Global Empty State) -->
+    @if (totalTasksCount === 0) {
+      <div class="empty-state-card">
+        <div class="empty-state-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <h3 class="empty-title">No tasks available</h3>
+        <p class="empty-desc">Your task list is completely empty. Create a new task using the form to get started!</p>
+      </div>
+    } 
+    <!-- State 2: Tasks exist globally, but filtered list is empty -->
+    @else if (filteredTasks.length === 0) {
+      <div class="empty-state-card empty-state-card--filtered">
+        <div class="empty-state-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </div>
+        <h3 class="empty-title">No matching tasks found</h3>
+        <p class="empty-desc">Try clearing your search query or choosing a different status/priority filter.</p>
+        <button type="button" class="reset-filter-btn" (click)="setStatusFilter('all'); setPriorityFilter('all'); clearSearch()">
+          Reset All Filters
+        </button>
+      </div>
+    } 
+    <!-- State 3: Render task items using Angular @for loop with conditional styling -->
+    @else {
+      <ul class="task-list" role="list">
+        @for (task of filteredTasks; track task.id) {
+          <li 
+            [ngClass]="getTaskCardClass(task)"
+            [class.completed]="task.completed"
+          >
+            <!-- Priority Indicator Accent Bar (styled by CSS based on priority class) -->
+            <div class="priority-accent-bar" aria-hidden="true"></div>
+
+            <div class="task-main-content">
+              <!-- Completion Checkbox / Toggle -->
+              <label class="checkbox-container" [title]="task.completed ? 'Mark task as pending' : 'Mark task as completed'">
+                <input
+                  type="checkbox"
+                  [checked]="task.completed"
+                  (change)="onToggleTask(task.id)"
+                  class="sr-only"
+                />
+                <span class="custom-checkbox" [class.checked]="task.completed">
+                  @if (task.completed) {
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  }
+                </span>
+              </label>
+
+              <!-- Task Details -->
+              <div class="task-details">
+                <div class="task-meta-top">
+                  <!-- Dynamic Priority Badge -->
+                  <span [ngClass]="getPriorityBadgeClass(task.priority)">
+                    @if (task.priority === 'high') {
+                      <span class="dot dot--high"></span> High Priority
+                    } @else if (task.priority === 'medium') {
+                      <span class="dot dot--medium"></span> Medium Priority
+                    } @else {
+                      <span class="dot dot--low"></span> Low Priority
+                    }
+                  </span>
+
+                  <!-- Completed Status Badge -->
+                  @if (task.completed) {
+                    <span class="badge-status-completed">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Completed
+                    </span>
+                  }
+
+                  <span class="task-date">
+                    Added {{ task.createdAt | date: 'shortTime' }} &bull; {{ task.createdAt | date: 'mediumDate' }}
+                  </span>
+                </div>
+
+                <!-- Task Title with Strikethrough & Grayed Out Styling When Completed -->
+                <p 
+                  class="task-title" 
+                  [class.strikethrough]="task.completed"
+                  [class.grayed-out]="task.completed"
+                >
+                  {{ task.title }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Task Actions -->
+            <div class="task-actions">
+              <button
+                type="button"
+                class="delete-btn"
+                (click)="onDeleteTask(task.id)"
+                [title]="'Delete task: ' + task.title"
+                aria-label="Delete task"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
