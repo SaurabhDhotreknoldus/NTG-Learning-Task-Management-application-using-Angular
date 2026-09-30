@@ -28,7 +28,7 @@ describe('TaskService', () => {
     expect(service.pendingCount()).toBe(pending);
   });
 
-  it('should add a new task with given priority', () => {
+  it('should add a new task with given priority and default uncompleted status', () => {
     const initialCount = service.totalCount();
     service.addTask('New Test Task', 'high');
 
@@ -39,10 +39,28 @@ describe('TaskService', () => {
     expect(added.completed).toBe(false);
   });
 
+  it('should add a new task with completed status when specified', () => {
+    const initialCount = service.totalCount();
+    service.addTask('Already Completed Task', 'medium', true);
+
+    expect(service.totalCount()).toBe(initialCount + 1);
+    const added = service.tasks()[0];
+    expect(added.title).toBe('Already Completed Task');
+    expect(added.priority).toBe('medium');
+    expect(added.completed).toBe(true);
+  });
+
   it('should not add an empty or whitespace-only task', () => {
     const initialCount = service.totalCount();
     service.addTask('   ', 'low');
     expect(service.totalCount()).toBe(initialCount);
+  });
+
+  it('should update task status via updateTaskStatus', () => {
+    const firstTask = service.tasks()[0];
+    service.updateTaskStatus(firstTask.id, true);
+    const updated = service.tasks().find((t) => t.id === firstTask.id);
+    expect(updated?.completed).toBe(true);
   });
 
   it('should toggle task completion status', () => {

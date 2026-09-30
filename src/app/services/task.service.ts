@@ -91,7 +91,7 @@ export class TaskService {
   /**
    * Adds a new task to the beginning of the list.
    */
-  addTask(title: string, priority: TaskPriority): void {
+  addTask(title: string, priority: TaskPriority, completed: boolean = false): void {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return;
 
@@ -99,12 +99,25 @@ export class TaskService {
       id: 'task-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
       title: trimmedTitle,
       priority,
-      completed: false,
+      completed,
       createdAt: new Date()
     };
 
     this.tasksSignal.update((current) => {
       const updated = [newTask, ...current];
+      this.saveTasks(updated);
+      return updated;
+    });
+  }
+
+  /**
+   * Updates completion status of a task by ID.
+   */
+  updateTaskStatus(id: string, completed: boolean): void {
+    this.tasksSignal.update((current) => {
+      const updated = current.map((task) =>
+        task.id === id ? { ...task, completed } : task
+      );
       this.saveTasks(updated);
       return updated;
     });

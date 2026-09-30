@@ -30,6 +30,15 @@
           <span>Move completed to bottom</span>
         </label>
 
+        <!-- New Task Router Button (Assignment 2 Routing) -->
+        <a routerLink="/add-task" class="add-task-route-btn" title="Navigate to Add Task form">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Add Task</span>
+        </a>
+
         @if (totalTasksCount > 0) {
           <button 
             type="button" 
@@ -158,6 +167,13 @@
         </div>
         <h3 class="empty-title">No tasks available</h3>
         <p class="empty-desc">Your task list is completely empty. Create a new task using the form to get started!</p>
+        <a routerLink="/add-task" class="empty-add-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Create New Task</span>
+        </a>
       </div>
     } 
     <!-- State 2: Tasks exist globally, but filtered list is empty -->

@@ -1,172 +1,191 @@
-<div class="task-form-card">
-  <div class="card-header">
-    <div class="header-icon">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 5v14M5 12h14"/>
-      </svg>
-    </div>
-    <div>
-      <h2 class="card-title">Create New Task</h2>
-      <p class="card-subtitle">Fill in details to organize your workday backlog</p>
-    </div>
-  </div>
-
-  <form #taskForm="ngForm" (ngSubmit)="onSubmit(taskForm)" novalidate class="task-form">
-    <!-- Task Title Field -->
-    <div class="form-group">
-      <div class="label-row">
-        <label for="taskTitle" class="form-label">
-          Task Title <span class="required-star" aria-hidden="true">*</span>
-        </label>
-        <span 
-          class="char-counter"
-          [class.char-counter--warning]="taskTitle.length > 80"
-          [class.char-counter--error]="taskTitle.length >= 100"
-        >
-          {{ taskTitle.length }}/100
-        </span>
+<div class="task-form-view-container">
+  <div class="task-form-card">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="card-title">Create New Task</h2>
+          <p class="card-subtitle">Fill in details to add a task to your backlog. You will be redirected to the list upon submission.</p>
+        </div>
       </div>
+      <a routerLink="/tasks" class="back-link" title="Return to Task List">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span>Back to List</span>
+      </a>
+    </div>
 
-      <div class="input-wrapper">
-        <input
-          type="text"
-          id="taskTitle"
-          name="taskTitle"
-          class="form-control"
-          placeholder="e.g., Conduct architectural review of services..."
-          required
-          minlength="3"
-          maxlength="100"
-          [(ngModel)]="taskTitle"
-          #titleModel="ngModel"
-          [class.is-invalid]="(titleModel.invalid && (titleModel.dirty || titleModel.touched)) || (isSubmitted && titleModel.invalid)"
-          [class.is-valid]="titleModel.valid && (titleModel.dirty || titleModel.touched)"
-          autocomplete="off"
-        />
-
-        @if (taskTitle.length > 0) {
-          <button
-            type="button"
-            class="clear-input-btn"
-            (click)="taskTitle = ''"
-            aria-label="Clear title input"
-            title="Clear text"
+    <!-- Reactive Form -->
+    <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" novalidate class="task-form">
+      <!-- Task Title Field -->
+      <div class="form-group">
+        <div class="label-row">
+          <label for="taskTitle" class="form-label">
+            Task Title <span class="required-star" aria-hidden="true">*</span>
+          </label>
+          <span 
+            class="char-counter"
+            [class.char-counter--warning]="titleLength > 80"
+            [class.char-counter--error]="titleLength >= 100"
           >
-            &times;
-          </button>
-        }
-      </div>
+            {{ titleLength }}/100
+          </span>
+        </div>
 
-      <!-- Validation Error Messages using Modern @if Control Flow -->
-      @if ((titleModel.invalid && (titleModel.dirty || titleModel.touched)) || (isSubmitted && titleModel.invalid)) {
-        <div class="validation-feedback">
-          @if (titleModel.errors?.['required']) {
-            <span class="error-msg">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12" stroke="#fff" stroke-width="2"/>
-                <line x1="12" y1="16" x2="12.01" y2="16" stroke="#fff" stroke-width="2"/>
-              </svg>
-              Task title is required.
-            </span>
-          }
-          @if (titleModel.errors?.['minlength']) {
-            <span class="error-msg">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="12" stroke="#fff" stroke-width="2"/>
-                <line x1="12" y1="16" x2="12.01" y2="16" stroke="#fff" stroke-width="2"/>
-              </svg>
-              Title must be at least 3 characters (currently {{ taskTitle.length }}).
-            </span>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="taskTitle"
+            formControlName="title"
+            class="form-control"
+            placeholder="e.g., Conduct architectural review of services..."
+            [class.is-invalid]="(titleControl?.invalid && (titleControl?.touched || isSubmitted))"
+            [class.is-valid]="titleControl?.valid && titleControl?.touched"
+            autocomplete="off"
+          />
+
+          @if (titleLength > 0) {
+            <button
+              type="button"
+              class="clear-input-btn"
+              (click)="clearTitle()"
+              aria-label="Clear title input"
+              title="Clear text"
+            >
+              &times;
+            </button>
           }
         </div>
-      }
-    </div>
 
-    <!-- Priority Selection Field -->
-    <div class="form-group">
-      <div class="label-row">
-        <label class="form-label">
-          Priority Level <span class="required-star" aria-hidden="true">*</span>
-        </label>
-        <span class="selected-priority-badge" [ngClass]="'badge-' + selectedPriority">
-          Selected: {{ selectedPriority | uppercase }}
-        </span>
-      </div>
-
-      <!-- Hidden select for form model binding demonstration -->
-      <select 
-        name="selectedPriority" 
-        class="sr-only" 
-        [(ngModel)]="selectedPriority"
-        tabindex="-1"
-        aria-hidden="true"
-      >
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </select>
-
-      <!-- Segmented Interactive Priority Radio Cards -->
-      <div class="priority-grid" role="radiogroup" aria-label="Task Priority">
-        @for (option of priorityOptions; track option.value) {
-          <button
-            type="button"
-            role="radio"
-            class="priority-card"
-            [ngClass]="getPriorityCardClass(option.value)"
-            [attr.aria-checked]="selectedPriority === option.value"
-            (click)="setPriority(option.value)"
-          >
-            <div class="priority-header">
-              <div class="priority-title-group">
-                <span class="priority-icon" aria-hidden="true">{{ option.icon }}</span>
-                <span class="priority-label">{{ option.label }}</span>
-              </div>
-              @if (selectedPriority === option.value) {
-                <div class="check-pill" aria-hidden="true">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                </div>
-              }
-            </div>
-            <span class="priority-desc">{{ option.description }}</span>
-          </button>
+        <!-- Validation Error Messages -->
+        @if ((titleControl?.invalid && (titleControl?.touched || isSubmitted))) {
+          <div class="validation-feedback">
+            @if (titleControl?.errors?.['required']) {
+              <span class="error-msg">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12" stroke="#fff" stroke-width="2"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16" stroke="#fff" stroke-width="2"/>
+                </svg>
+                Task title is required.
+              </span>
+            }
+            @if (titleControl?.errors?.['minlength']) {
+              <span class="error-msg">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12" stroke="#fff" stroke-width="2"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16" stroke="#fff" stroke-width="2"/>
+                </svg>
+                Title must be at least 3 characters (currently {{ titleLength }}).
+              </span>
+            }
+          </div>
         }
       </div>
-    </div>
 
-    <!-- Actions -->
-    <div class="form-actions">
-      <!-- Clear Form Button -->
-      <button
-        type="button"
-        class="btn btn-secondary"
-        (click)="resetForm(taskForm)"
-        title="Reset input fields to default values"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-          <path d="M3 3v5h5"/>
-        </svg>
-        <span>Clear Form</span>
-      </button>
+      <!-- Priority Selection Field -->
+      <div class="form-group">
+        <div class="label-row">
+          <label class="form-label">
+            Priority Level <span class="required-star" aria-hidden="true">*</span>
+          </label>
+          <span class="selected-priority-badge" [ngClass]="'badge-' + selectedPriority">
+            Selected: {{ selectedPriority | uppercase }}
+          </span>
+        </div>
 
-      <!-- Submit Task Button -->
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="taskForm.invalid || !taskTitle.trim()"
-        title="Create new task"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        <span>Add Task</span>
-      </button>
-    </div>
-  </form>
+        <!-- Segmented Interactive Priority Radio Cards -->
+        <div class="priority-grid" role="radiogroup" aria-label="Task Priority">
+          @for (option of priorityOptions; track option.value) {
+            <button
+              type="button"
+              role="radio"
+              class="priority-card"
+              [ngClass]="getPriorityCardClass(option.value)"
+              [attr.aria-checked]="selectedPriority === option.value"
+              (click)="setPriority(option.value)"
+            >
+              <div class="priority-header">
+                <div class="priority-title-group">
+                  <span class="priority-icon" aria-hidden="true">{{ option.icon }}</span>
+                  <span class="priority-label">{{ option.label }}</span>
+                </div>
+                @if (selectedPriority === option.value) {
+                  <div class="check-pill" aria-hidden="true">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </div>
+                }
+              </div>
+              <span class="priority-desc">{{ option.description }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Completed Status Field (Assignment 2 Requirement) -->
+      <div class="form-group status-form-group">
+        <label class="form-label">Initial Status</label>
+        <label class="status-toggle-card" [class.status-toggle-card--checked]="completedControl?.value">
+          <div class="toggle-checkbox-wrapper">
+            <input 
+              type="checkbox" 
+              formControlName="completed"
+              id="taskCompletedStatus"
+              class="sr-only"
+            />
+            <span class="custom-toggle-box" [class.checked]="completedControl?.value">
+              @if (completedControl?.value) {
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              }
+            </span>
+          </div>
+          <div class="toggle-text">
+            <span class="toggle-title">Mark as Completed immediately</span>
+            <span class="toggle-desc">Check this if the task is already finished and should be recorded directly as completed.</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <!-- Clear Form Button -->
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="resetForm()"
+          title="Reset input fields to default values"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          <span>Clear Form</span>
+        </button>
+
+        <!-- Submit Task Button -->
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="taskForm.invalid"
+          title="Create new task and return to task list"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>Add Task &amp; View List</span>
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

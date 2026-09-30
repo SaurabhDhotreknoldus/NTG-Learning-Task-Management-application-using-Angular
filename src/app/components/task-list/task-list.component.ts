@@ -1,20 +1,25 @@
-import { Component, EventEmitter, Input, Output, computed, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Task, TaskFilter, PriorityFilter, TaskPriority } from '../../models/task.model';
+import { TaskService } from '../../services/task.service';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './task-list.component.html',
   styleUrl: './task-list.component.scss'
 })
 export class TaskListComponent {
-  /** Input list of tasks */
-  @Input({ required: true }) tasks: Task[] = [];
-  /** Input live count of pending tasks */
-  @Input() pendingCount: number = 0;
+  // Dependency Injection of TaskService per Assignment 2 requirements
+  readonly taskService = inject(TaskService);
+
+  /** Optional input override (defaults to injected taskService tasks) */
+  @Input() tasksInput?: Task[];
+  /** Optional input override (defaults to injected taskService pending count) */
+  @Input() pendingCountInput?: number;
 
   /** Event emitted when a task is toggled */
   @Output() taskToggled = new EventEmitter<string>();
@@ -23,11 +28,19 @@ export class TaskListComponent {
   /** Event emitted when clear all is requested */
   @Output() allTasksCleared = new EventEmitter<void>();
 
-  // Filter signals/state (demonstrating two-way binding and modern signal computing)
+  // Filter state (two-way binding support)
   searchQuery: string = '';
   activeStatusFilter: TaskFilter = 'all';
   activePriorityFilter: PriorityFilter = 'all';
   moveCompletedToBottom: boolean = true;
+
+  get tasks(): Task[] {
+    return this.tasksInput ?? this.taskService.tasks();
+  }
+
+  get pendingCount(): number {
+    return this.pendingCountInput ?? this.taskService.pendingCount();
+  }
 
   /**
    * Filtered and sorted tasks
@@ -67,7 +80,6 @@ export class TaskListComponent {
     return result;
   }
 
-  // Quick statistics for display
   get totalTasksCount(): number {
     return this.tasks.length;
   }
@@ -84,16 +96,28 @@ export class TaskListComponent {
     this.activePriorityFilter = filter;
   }
 
+  /**
+   * Toggle task completion using injected TaskService
+   */
   onToggleTask(id: string): void {
+    this.taskService.toggleTask(id);
     this.taskToggled.emit(id);
   }
 
+  /**
+   * Delete task using injected TaskService
+   */
   onDeleteTask(id: string): void {
+    this.taskService.deleteTask(id);
     this.taskDeleted.emit(id);
   }
 
+  /**
+   * Clear all tasks using injected TaskService
+   */
   onClearAll(): void {
     if (confirm('Are you sure you want to clear all tasks?')) {
+      this.taskService.clearAllTasks();
       this.allTasksCleared.emit();
     }
   }
@@ -102,9 +126,6 @@ export class TaskListComponent {
     this.searchQuery = '';
   }
 
-  /**
-   * Returns dynamic CSS class mapping for a task item based on priority and completed state
-   */
   getTaskCardClass(task: Task): Record<string, boolean> {
     return {
       'task-item': true,
@@ -114,9 +135,6 @@ export class TaskListComponent {
     };
   }
 
-  /**
-   * Returns dynamic badge class for task priority
-   */
   getPriorityBadgeClass(priority: TaskPriority): string {
     switch (priority) {
       case 'high':

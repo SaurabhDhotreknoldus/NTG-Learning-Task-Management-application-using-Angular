@@ -1,11 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
+import { provideRouter } from '@angular/router';
 import { TaskListComponent } from './task-list.component';
+import { TaskService } from '../../services/task.service';
 import { Task } from '../../models/task.model';
 
 describe('TaskListComponent', () => {
   let component: TaskListComponent;
   let fixture: ComponentFixture<TaskListComponent>;
+  let taskService: TaskService;
 
   const mockTasks: Task[] = [
     {
@@ -32,20 +35,28 @@ describe('TaskListComponent', () => {
   ];
 
   beforeEach(async () => {
+    localStorage.clear();
     await TestBed.configureTestingModule({
-      imports: [TaskListComponent, FormsModule]
+      imports: [TaskListComponent, FormsModule],
+      providers: [TaskService, provideRouter([])]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TaskListComponent);
     component = fixture.componentInstance;
-    component.tasks = [...mockTasks];
-    component.pendingCount = 2;
+    taskService = TestBed.inject(TaskService);
+    component.tasksInput = [...mockTasks];
+    component.pendingCountInput = 2;
     fixture.detectChanges();
     await fixture.whenStable();
   });
 
-  it('should create the task list component', () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  it('should create the task list component with injected TaskService', () => {
     expect(component).toBeTruthy();
+    expect(component.taskService).toBeDefined();
   });
 
   it('should compute totalTasksCount and completedTasksCount correctly', () => {
@@ -84,16 +95,24 @@ describe('TaskListComponent', () => {
     expect(lastItem.completed).toBe(true);
   });
 
-  it('should emit taskToggled event when onToggleTask is called', () => {
-    const spy = vi.spyOn(component.taskToggled, 'emit');
+  it('should toggle task via TaskService when onToggleTask is called', () => {
+    const serviceSpy = vi.spyOn(taskService, 'toggleTask');
+    const emitSpy = vi.spyOn(component.taskToggled, 'emit');
+
     component.onToggleTask('task-2');
-    expect(spy).toHaveBeenCalledWith('task-2');
+
+    expect(serviceSpy).toHaveBeenCalledWith('task-2');
+    expect(emitSpy).toHaveBeenCalledWith('task-2');
   });
 
-  it('should emit taskDeleted event when onDeleteTask is called', () => {
-    const spy = vi.spyOn(component.taskDeleted, 'emit');
+  it('should delete task via TaskService when onDeleteTask is called', () => {
+    const serviceSpy = vi.spyOn(taskService, 'deleteTask');
+    const emitSpy = vi.spyOn(component.taskDeleted, 'emit');
+
     component.onDeleteTask('task-3');
-    expect(spy).toHaveBeenCalledWith('task-3');
+
+    expect(serviceSpy).toHaveBeenCalledWith('task-3');
+    expect(emitSpy).toHaveBeenCalledWith('task-3');
   });
 
   it('should return correct dynamic class mapping for task card', () => {
@@ -101,5 +120,12 @@ describe('TaskListComponent', () => {
     expect(classes['task-item']).toBe(true);
     expect(classes['task-item--completed']).toBe(true);
     expect(classes['priority-high']).toBe(true);
+  });
+
+  it('should render routerLink to /add-task in the template', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const addBtn = compiled.querySelector('.add-task-route-btn');
+    expect(addBtn).toBeTruthy();
+    expect(addBtn?.getAttribute('href') || addBtn?.getAttribute('routerLink')).toBeDefined();
   });
 });
