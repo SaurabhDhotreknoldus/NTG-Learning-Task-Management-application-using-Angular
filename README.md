@@ -192,27 +192,3 @@ A total of **35 unit tests** verify all Assignment 2 requirements:
       Tests  35 passed (35)
    Duration  2.07s
 ```
-
----
-
-## 📊 Assignment 2 Compliance Matrix
-
-| Assignment 2 Requirement | Compliance Summary | Status |
-| :--- | :--- | :---: |
-| **Separate Components** | `TaskListComponent` (`/tasks`) and `TaskFormComponent` (`/add-task`) | ✅ Pass |
-| **Task Management** | Title, Priority (Low/Med/High), and Completed Status with CRUD lifecycle | ✅ Pass |
-| **Existing Features Retained** | Empty state, priority styling, completed strikethrough, live pending count | ✅ Pass |
-| **Angular Forms** | Reactive Forms with title, priority, **completed status**, validation, and Clear Form button | ✅ Pass |
-| **Angular Routing** | Dedicated routes `/tasks` and `/add-task` with seamless view navigation | ✅ Pass |
-| **Post-Submission Redirect** | Successfully adding a task navigates back to `/tasks` via Router | ✅ Pass |
-| **Dedicated Task Service** | `TaskService` maintains, retrieves, adds, and updates task status with Signals | ✅ Pass |
-| **Dependency Injection** | `TaskListComponent` and `TaskFormComponent` use injected `TaskService` | ✅ Pass |
-| **Navigation Bar** | Router links for `Tasks \| Add Task` with active tab indicators | ✅ Pass |
-| **README & Evidence** | Comprehensive documentation and 4 high-resolution evidence screenshots | ✅ Pass |
-
----
-
-## 👤 Submission Details
-- **Assignment**: Angular Task Manager - Assignment 2 (Angular Architecture & Ecosystem)
-- **Repository Collaborator**: `arjunpandt` (to be added via GitHub repository settings)
-- **Built with**: Angular 22 &bull; TypeScript &bull; Reactive Forms &bull; Angular Router &bull; Signals &bull; SCSS &bull; Vitest
