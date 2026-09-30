@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { AppComponent } from './app.component';
 import { TaskService } from './services/task.service';
+import { routes } from './app.routes';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -11,7 +13,7 @@ describe('AppComponent', () => {
     localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [TaskService]
+      providers: [TaskService, provideRouter(routes)]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
@@ -40,15 +42,19 @@ describe('AppComponent', () => {
     expect(pendingText).toContain(String(component.pendingCount()));
   });
 
-  it('should render task form and task list subcomponents', () => {
+  it('should render router-outlet and main navigation links', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('app-task-form')).toBeTruthy();
-    expect(compiled.querySelector('app-task-list')).toBeTruthy();
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
+
+    const navLinks = compiled.querySelectorAll('.nav-tab-link');
+    expect(navLinks.length).toBe(2);
+    expect(navLinks[0].textContent).toContain('Tasks');
+    expect(navLinks[1].textContent).toContain('Add Task');
   });
 
-  it('should add task through service when onTaskAdded is called', () => {
-    const initialCount = component.totalCount();
-    component.onTaskAdded({ title: 'New Angular Task', priority: 'high' });
-    expect(component.totalCount()).toBe(initialCount + 1);
+  it('should call TaskService.resetToDefaults when onResetSampleData is called', () => {
+    const resetSpy = vi.spyOn(taskService, 'resetToDefaults');
+    component.onResetSampleData();
+    expect(resetSpy).toHaveBeenCalled();
   });
 });

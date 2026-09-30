@@ -1,30 +1,69 @@
 <div class="app-layout">
-  <!-- Top Application Navbar -->
+  <!-- Top Application Navbar with Router Navigation -->
   <header class="app-navbar">
     <div class="navbar-container">
       <div class="navbar-brand">
-        <div class="brand-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <div class="brand-title-row">
-            <h1 class="brand-name">TaskMaster</h1>
-            <span class="brand-badge">Angular</span>
+        <a routerLink="/tasks" class="brand-link" title="TaskMaster Home">
+          <div class="brand-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
           </div>
-          <span class="brand-tagline">NTG Learning &bull; Task Management Application</span>
-        </div>
+          <div class="brand-text">
+            <div class="brand-title-row">
+              <h1 class="brand-name">TaskMaster</h1>
+              <span class="brand-badge">Assignment 2</span>
+            </div>
+            <span class="brand-tagline">Architecture &bull; Forms &bull; Routing &bull; Services &bull; DI</span>
+          </div>
+        </a>
       </div>
 
+      <!-- Angular Router Navigation Links (Assignment 2 Requirement) -->
+      <nav class="navbar-navigation" aria-label="Main Navigation">
+        <a 
+          routerLink="/tasks" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="nav-tab-link"
+          title="View task backlog list"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/>
+            <line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          <span>Tasks</span>
+          <span class="nav-count-badge">{{ totalCount() }}</span>
+        </a>
+
+        <a 
+          routerLink="/add-task" 
+          routerLinkActive="active" 
+          class="nav-tab-link"
+          title="Create a new task with reactive form"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          <span>Add Task</span>
+        </a>
+      </nav>
+
+      <!-- Right Navbar Utilities -->
       <div class="navbar-actions">
-        <!-- Live Live Status Indicator -->
+        <!-- Live Status Pill -->
         <div class="live-status-pill">
           <span class="pulse-dot"></span>
           <span>Live State: <strong>{{ pendingCount() }} Pending</strong></span>
         </div>
 
-        <!-- Reset Sample Data Button (Helpful for evaluator testing) -->
+        <!-- Reset Sample Data Button -->
         <button 
           type="button" 
           class="reset-demo-btn" 
@@ -41,7 +80,7 @@
     </div>
   </header>
 
-  <!-- Main Content Body -->
+  <!-- Main Application Body -->
   <main class="app-main">
     <div class="content-container">
 
@@ -63,7 +102,7 @@
           </div>
         </div>
 
-        <!-- Pending Tasks (Key Requirement) -->
+        <!-- Pending Tasks -->
         <div class="metric-card metric-card--pending">
           <div class="metric-icon metric-icon--pending">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -109,66 +148,58 @@
         </div>
       </section>
 
-      <!-- Main Workspace Grid -->
-      <div class="workspace-grid">
-        <!-- Left Sidebar: Task Form & Concept Overview -->
-        <aside class="sidebar-column">
-          <!-- Component 1: Task Form (Add new task + validation + clear form) -->
-          <app-task-form (taskAdded)="onTaskAdded($event)"></app-task-form>
+      <!-- Active Routed View via Router Outlet -->
+      <section class="routed-view-wrapper">
+        <router-outlet></router-outlet>
+      </section>
 
-          <!-- Angular Concepts Evaluator Guide Card -->
-          <div class="concepts-card">
-            <div class="concepts-header">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-              </svg>
-              <h3>Assignment Concepts Demonstrated</h3>
-            </div>
-            <ul class="concepts-list">
-              <li>
-                <span class="concept-tag">Interpolation</span>
-                <span class="concept-desc"><code>{{ '{{' }} pendingCount() {{ '}}' }}</code>, dynamic titles, dates</span>
-              </li>
-              <li>
-                <span class="concept-tag">Property Binding</span>
-                <span class="concept-desc"><code>[disabled]</code>, <code>[checked]</code>, <code>[ngClass]</code>, <code>[style.width.%]</code></span>
-              </li>
-              <li>
-                <span class="concept-tag">Event Binding</span>
-                <span class="concept-desc"><code>(ngSubmit)</code>, <code>(click)</code>, <code>(change)</code></span>
-              </li>
-              <li>
-                <span class="concept-tag">Two-Way Binding</span>
-                <span class="concept-desc"><code>[(ngModel)]="taskTitle"</code>, <code>[(ngModel)]="searchQuery"</code></span>
-              </li>
-              <li>
-                <span class="concept-tag">Modern Control Flow</span>
-                <span class="concept-desc"><code>&#64;if</code>, <code>&#64;else if</code>, <code>&#64;for (track id)</code>, <code>&#64;empty</code></span>
-              </li>
-              <li>
-                <span class="concept-tag">Dynamic Styling</span>
-                <span class="concept-desc">Priority badges, strikethrough, grayed out, reordering</span>
-              </li>
-            </ul>
+      <!-- Assignment 2 Architecture & Ecosystem Guide Card -->
+      <section class="concepts-card-full">
+        <div class="concepts-header">
+          <div class="concepts-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+              <polyline points="2 17 12 22 22 17"/>
+              <polyline points="2 12 12 17 22 12"/>
+            </svg>
           </div>
-        </aside>
+          <div>
+            <h3>Assignment 2 Architecture &amp; Ecosystem Demonstrated</h3>
+            <p>Verification matrix for Forms, Routing, Services, and Dependency Injection</p>
+          </div>
+        </div>
 
-        <!-- Right Column: Task List Component -->
-        <section class="main-column">
-          <!-- Component 2: Task List (Display tasks, filter, search, priority styling, completed state) -->
-          <app-task-list
-            [tasks]="tasks()"
-            [pendingCount]="pendingCount()"
-            (taskToggled)="onTaskToggled($event)"
-            (taskDeleted)="onTaskDeleted($event)"
-            (allTasksCleared)="onAllTasksCleared()"
-          ></app-task-list>
-        </section>
-      </div>
+        <div class="concepts-grid">
+          <div class="concept-item">
+            <span class="concept-tag concept-tag--forms">Angular Reactive Forms</span>
+            <p class="concept-desc">
+              <code>FormBuilder</code>, <code>FormGroup</code>, custom controls for title, priority, and <strong>completed status</strong>. Validation rules: <code>required</code>, <code>minLength(3)</code>, <code>maxLength(100)</code> with real-time error alerts and <strong>Clear Form</strong> functionality.
+            </p>
+          </div>
+
+          <div class="concept-item">
+            <span class="concept-tag concept-tag--routing">Angular Router &amp; Navigation</span>
+            <p class="concept-desc">
+              Configured routes: <code>/tasks</code> (Task List), <code>/add-task</code> (Add Task Form), and wildcards. Navigation via <code>routerLink</code>, <code>routerLinkActive="active"</code>, and programmatic redirect with <code>Router.navigate(['/tasks'])</code> upon form submission.
+            </p>
+          </div>
+
+          <div class="concept-item">
+            <span class="concept-tag concept-tag--services">Dedicated Task Service</span>
+            <p class="concept-desc">
+              Centralized reactive store managing task retrieval, additions with priority &amp; completed status, status updates, deletions, and <code>localStorage</code> persistence via Angular Signals.
+            </p>
+          </div>
+
+          <div class="concept-item">
+            <span class="concept-tag concept-tag--di">Dependency Injection</span>
+            <p class="concept-desc">
+              Provided at root and cleanly injected into <code>TaskListComponent</code> and <code>TaskFormComponent</code> using modern <code>inject(TaskService)</code>, decoupling views from data management.
+            </p>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
@@ -176,10 +207,10 @@
   <footer class="app-footer">
     <div class="footer-container">
       <p class="footer-text">
-        <strong>Angular Task Management Assignment</strong> &bull; Developed with Angular 22, Signals, and Modern SCSS.
+        <strong>TaskMaster</strong> &bull; Angular Task Management Assignment 2 (Angular Architecture &amp; Ecosystem)
       </p>
       <p class="footer-subtext">
-        Ready for Git repository submission (Collaborator: <code>arjunpandt</code>)
+        Demonstrating Reactive Forms, Router Navigation, TaskService &amp; Dependency Injection &bull; Collaborator: <code>arjunpandt</code>
       </p>
     </div>
   </footer>
